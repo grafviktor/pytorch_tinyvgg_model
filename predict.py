@@ -25,7 +25,7 @@ else:
 # 2. Shape 64x64
 # 3. Put it on a right device
 
-custom_image_uint = torchvision.io.read_image(args.file_name)
+custom_image_uint = torchvision.io.read_image(args.file_name).type(torch.float32)
 
 # plt.imshow(custom_image_uint.permute(1, 2, 0))
 
@@ -35,7 +35,7 @@ custom_image_uint = custom_image_transform(custom_image_uint)
 print(f'custom_image_uint.shape={custom_image_uint.shape}')
 
 model = utils.load_model("models", "05_going_modular_tingvgg_model.pth")
-model.to(device)
+model.to(device) # Проверить будет ли работать если модель обучалась на одном устройстве, а инференс делать на другом
 model.eval()
 
 with torch.inference_mode():
@@ -54,13 +54,13 @@ with torch.inference_mode():
     custom_image_batch = custom_image_float.unsqueeze(dim=0)
     custom_image_batch = custom_image_batch.to(device)
     prediction_logits = model(custom_image_batch.to(device))
-# print(f'image_pred={torch.argmax(image_pred)}')
-prediction = ["sushi", "steak", "pizza"][torch.argmax(prediction_logits).item()]
-# полезное свойство, хорошо натренированная модель будет выдавать значения близкие
-# к единице, потому как модель уверенна в своем выборе. Плохая модель будет иметь
-# в probability значения, которые похожи на догадки. Например, если у нас три
-# возможных варианта ответа и модель выдает ответ с вероятностью 0.345, то вероятно
-# то вероятно, что модель выбрала на угад один из трех ответов, где вероятность
-# была на сотую профента больше.
-probability = torch.softmax(prediction_logits, dim=1).max().cpu()
-print(f"Prediction: {prediction}, Probability: {probability:.3f}")
+    # print(f'image_pred={torch.argmax(image_pred)}')
+    prediction = ["sushi", "steak", "pizza"][torch.argmax(prediction_logits).item()]
+    # полезное свойство, хорошо натренированная модель будет выдавать значения близкие
+    # к единице, потому как модель уверенна в своем выборе. Плохая модель будет иметь
+    # в probability значения, которые похожи на догадки. Например, если у нас три
+    # возможных варианта ответа и модель выдает ответ с вероятностью 0.345, то вероятно
+    # то вероятно, что модель выбрала на угад один из трех ответов, где вероятность
+    # была на сотую профента больше.
+    probability = torch.softmax(prediction_logits, dim=1).max().cpu()
+    print(f"Prediction: {prediction}, Probability: {probability:.3f}")
