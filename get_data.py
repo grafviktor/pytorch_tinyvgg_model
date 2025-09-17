@@ -14,16 +14,16 @@ def download_data():
     # Download pizza, steak, sushi data
     with open(data_path / "pizza_steak_sushi.zip", "wb") as f:
         request = requests.get("https://github.com/mrdbourke/pytorch-deep-learning/raw/main/data/pizza_steak_sushi.zip")
-    print("Downloading pizza, steak, sushi data...")
-    f.write(request.content)
+        print("Downloading pizza, steak, sushi data...")
+        f.write(request.content)
 
-    # Unzip pizza, steak, sushi data
-    with zipfile.ZipFile(data_path / "pizza_steak_sushi.zip", "r") as zip_ref:
-        print("Unzipping pizza, steak, sushi data...")
-    zip_ref.extractall(image_path)
+        # Unzip pizza, steak, sushi data
+        with zipfile.ZipFile(data_path / "pizza_steak_sushi.zip", "r") as zip_ref:
+            print("Unzipping pizza, steak, sushi data...")
+            zip_ref.extractall(image_path)
 
-    # Remove zip file
-    os.remove(data_path / "pizza_steak_sushi.zip")
+        # Remove zip file
+        os.remove(data_path / "pizza_steak_sushi.zip")
 
 if image_path.is_dir():
     print(f"Directory '{image_path}' already exists. Nothing to download.")
