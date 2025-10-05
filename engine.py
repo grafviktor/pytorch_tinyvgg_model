@@ -3,12 +3,8 @@ Contains functions for training and testing a PyTorch model.
 """
 
 from typing import Dict, List, Tuple
-
 from tqdm.auto import tqdm
-
 import torch
-
-from typing import Tuple
 
 def train_step(model: torch.nn.Module,
                dataloader: torch.utils.data.DataLoader,
@@ -127,16 +123,17 @@ def train(model: torch.nn.Module,
           optimizer: torch.optim.Optimizer,
           loss_fn: torch.nn.Module,
           epochs: int,
-          device: torch.device) -> Dict[str, List[float]]:
-  """Trains and tests a PyTorch model.
+          device: torch.device,
+          writer: torch.utils.tensorboard.SummaryWriter=None) -> Dict[str, List[float]]:
+    """Trains and tests a PyTorch model.
 
-  Passes a target PyTorch models through train_step() and test_step()
-  functions for a number of epochs, training and testing the model
-  in the same epoch loop.
+    Passes a target PyTorch models through train_step() and test_step()
+    functions for a number of epochs, training and testing the model
+    in the same epoch loop.
 
-  Calculates, prints and stores evaluation metrics throughout.
+    Calculates, prints and stores evaluation metrics throughout.
 
-  Args:
+    Args:
     model: A PyTorch model to be trained and tested.
     train_dataloader: A DataLoader instance for the model to be trained on.
     test_dataloader: A DataLoader instance for the model to be tested on.
@@ -145,7 +142,7 @@ def train(model: torch.nn.Module,
     epochs: An integer indicating how many epochs to train for.
     device: A target device to compute on (e.g. "cuda" or "cpu").
 
-  Returns:
+    Returns:
     A dictionary of training and testing loss as well as training and
     testing accuracy metrics. Each metric has a value in a list for
     each epoch.
@@ -154,20 +151,23 @@ def train(model: torch.nn.Module,
                   test_loss: [...],
                   test_acc: [...]}
     For example if training for epochs=2:
-                 {train_loss: [2.0616, 1.0537],
-                  train_acc: [0.3945, 0.3945],
-                  test_loss: [1.2641, 1.5706],
-                  test_acc: [0.3400, 0.2973]}
-  """
-  # Create empty results dictionary
-  results = {"train_loss": [],
-      "train_acc": [],
-      "test_loss": [],
-      "test_acc": []
-  }
+             {train_loss: [2.0616, 1.0537],
+              train_acc: [0.3945, 0.3945],
+              test_loss: [1.2641, 1.5706],
+              test_acc: [0.3400, 0.2973]}
+    """
+    # Create empty results dictionary
+    results = {"train_loss": [],
+                "train_acc": [],
+                "test_loss": [],
+                "test_acc": []
+    }
 
-  # Loop through training and testing steps for a number of epochs
-  for epoch in tqdm(range(epochs)):
+    # Make sure model on target device
+    model.to(device)
+
+    # Loop through training and testing steps for a number of epochs
+    for epoch in tqdm(range(epochs)):
       train_loss, train_acc = train_step(model=model,
                                           dataloader=train_dataloader,
                                           loss_fn=loss_fn,
@@ -193,5 +193,27 @@ def train(model: torch.nn.Module,
       results["test_loss"].append(test_loss)
       results["test_acc"].append(test_acc)
 
-  # Return the filled results at the end of the epochs
-  return results
+      # Эта штука нужна только для Experiment Tracking -----
+      if writer:
+        # Add results to SummaryWriter
+        writer.add_scalars(main_tag="Loss",
+                          tag_scalar_dict={
+                            "train_loss": train_loss,
+                            "test_loss": test_loss
+                          },
+                          global_step=epoch)
+
+        writer.add_scalars(main_tag="Accuracy",
+                          tag_scalar_dict={
+                            "train_acc": train_acc,
+                            "test_acc": test_acc
+                          },
+                          global_step=epoch)
+
+        writer.add_graph(model=model,
+                        input_to_model=torch.randn(32, 3, 224, 224).to(device))
+        writer.close()
+      # Конец поддержки Experiment Tracking -------
+
+    # Return the filled results at the end of the epochs
+    return results
