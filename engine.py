@@ -3,8 +3,12 @@ Contains functions for training and testing a PyTorch model.
 """
 
 from typing import Dict, List, Tuple
+
 from tqdm.auto import tqdm
+
 import torch
+
+from typing import Tuple
 
 def train_step(model: torch.nn.Module,
                dataloader: torch.utils.data.DataLoader,
@@ -124,7 +128,7 @@ def train(model: torch.nn.Module,
           loss_fn: torch.nn.Module,
           epochs: int,
           device: torch.device,
-          writer: torch.utils.tensorboard.SummaryWriter=None) -> Dict[str, List[float]]:
+          writer: torch.utils.tensorboard.SummaryWriter=None) -> Dict[str, List]:
     """Trains and tests a PyTorch model.
 
     Passes a target PyTorch models through train_step() and test_step()
@@ -147,9 +151,9 @@ def train(model: torch.nn.Module,
     testing accuracy metrics. Each metric has a value in a list for
     each epoch.
     In the form: {train_loss: [...],
-                  train_acc: [...],
-                  test_loss: [...],
-                  test_acc: [...]}
+              train_acc: [...],
+              test_loss: [...],
+              test_acc: [...]}
     For example if training for epochs=2:
              {train_loss: [2.0616, 1.0537],
               train_acc: [0.3945, 0.3945],
@@ -158,9 +162,9 @@ def train(model: torch.nn.Module,
     """
     # Create empty results dictionary
     results = {"train_loss": [],
-                "train_acc": [],
-                "test_loss": [],
-                "test_acc": []
+               "train_acc": [],
+               "test_loss": [],
+               "test_acc": []
     }
 
     # Make sure model on target device
@@ -169,22 +173,22 @@ def train(model: torch.nn.Module,
     # Loop through training and testing steps for a number of epochs
     for epoch in tqdm(range(epochs)):
       train_loss, train_acc = train_step(model=model,
-                                          dataloader=train_dataloader,
-                                          loss_fn=loss_fn,
-                                          optimizer=optimizer,
-                                          device=device)
+                                        dataloader=train_dataloader,
+                                        loss_fn=loss_fn,
+                                        optimizer=optimizer,
+                                        device=device)
       test_loss, test_acc = test_step(model=model,
-          dataloader=test_dataloader,
-          loss_fn=loss_fn,
-          device=device)
+        dataloader=test_dataloader,
+        loss_fn=loss_fn,
+        device=device)
 
       # Print out what's happening
       print(
-          f"Epoch: {epoch+1} | "
-          f"train_loss: {train_loss:.4f} | "
-          f"train_acc: {train_acc:.4f} | "
-          f"test_loss: {test_loss:.4f} | "
-          f"test_acc: {test_acc:.4f}"
+        f"Epoch: {epoch+1} | "
+        f"train_loss: {train_loss:.4f} | "
+        f"train_acc: {train_acc:.4f} | "
+        f"test_loss: {test_loss:.4f} | "
+        f"test_acc: {test_acc:.4f}"
       )
 
       # Update results dictionary

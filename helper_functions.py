@@ -226,8 +226,9 @@ def pred_and_plot_image(
     target_image_pred_label = torch.argmax(target_image_pred_probs, dim=1)
 
     # 8. Plot the image alongside the prediction and prediction probability
+    original_img = torchvision.io.read_image(str(image_path))
     plt.imshow(
-        target_image.squeeze().permute(1, 2, 0)
+        original_img.squeeze(0).permute(1, 2, 0) / 255.0
     )  # make sure it's the right size for matplotlib
     if class_names:
         title = f"Pred: {class_names[target_image_pred_label.cpu()]} | Prob: {target_image_pred_probs.max().cpu():.3f}"

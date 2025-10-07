@@ -30,5 +30,3 @@ if image_path.is_dir():
 else:
     download_data()
 
-
-

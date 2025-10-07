@@ -30,9 +30,9 @@ print(f"Creating mode with parameters:\n"
       f"\tlearning_rate={args.learning_rate}\n")
 
 if platform.system() == "Darwin":  # macOS
-    """ DataLoader with num_workers > 0 can be significantly slower on macOS due to the way multiprocessing and file I/O 
-    are handled by the OS. This is not a problem on Linux, but on macOS, using multiple workers often leads to overhead 
-    that outweighs the benefits. Set num_workers=0 in your create_dataloaders call (as you already do in train.py). This 
+    """ DataLoader with num_workers > 0 can be significantly slower on macOS due to the way multiprocessing and file I/O
+    are handled by the OS. This is not a problem on Linux, but on macOS, using multiple workers often leads to overhead
+    that outweighs the benefits. Set num_workers=0 in your create_dataloaders call (as you already do in train.py). This
     will make data loading single-threaded, which is usually faster and more stable on macOS."""
     NUM_WORKERS = 0
 else:
